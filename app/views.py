@@ -1,3 +1,5 @@
 from django.shortcuts import render
+from django.shortcuts import HttpResponse, HttpResponsePermanentRedirect
 
-# Create your views here.
+def index(request):
+    return HttpResponse("Index page!")

@@ -77,13 +77,30 @@ WSGI_APPLICATION = 'blog.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
+# This is the default Django db which is not advised to be used in production or complex systems.
+# But for simplicity on this project I will keep using it and commit it to github.
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+# Recommended database and settings: Postgres
+# In order to set up and use you will need postgres driver such as psycopg2
+# And have a db with below name, username and password
 
+# _ENGINE = "django.db.backends.postgresql_psycopg2"
+# DATABASES = {
+#     'default': {
+#         'ENGINE': _ENGINE,  # Add 'postgresql_psycopg2', 'postgresql'
+#         'NAME': 'blog',
+#         'USER': 'developer',
+#         'PASSWORD': 'developer',
+#         'HOST': 'localhost',
+#         'PORT': '',
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
