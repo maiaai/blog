@@ -1,12 +1,14 @@
-from django.urls import path, include, re_path
-from app.views import index
+from .views import UserViewSet, PostViewSet, TopicViewSet
+from rest_framework.routers import DefaultRouter
+from django.urls import path, include
+
+
+blog_api = DefaultRouter()
+blog_api.register(r'users', UserViewSet, 'user')
+blog_api.register(r'posts', PostViewSet, 'post')
+blog_api.register(r'topics', TopicViewSet, 'topic')
 
 urlpatterns = [
-    path('', index, name='index'),
-
-    # path('<int:question_id>/', views.detail, name='detail'),
-    # ex: /polls/5/results/
-    # path('<int:question_id>/results/', views.results, name='results'),
-    # ex: /polls/5/vote/
-    # path('<int:question_id>/vote/', views.vote, name='vote'),
+    path('', include(blog_api.urls)),
+    path('auth/', include('rest_framework.urls')),
 ]
