@@ -20,10 +20,10 @@ class UserViewSet(viewsets.ModelViewSet):
         """
         Instantiates and returns the list of permissions that this view requires.
         """
-        if self.action == 'create':
-            permission_classes = [permissions.AllowAny]
+        if self.action == 'update' or self.action == 'partial_update' or self.action == 'destroy':
+            permission_classes = [IsOwnerOrAdmin]
         else:
-            permission_classes = [permissions.IsAuthenticated]
+            permission_classes = [permissions.AllowAny]
 
         return [permission() for permission in permission_classes]
 
@@ -38,7 +38,7 @@ class PostViewSet(viewsets.ModelViewSet):
 
         if self.action == 'list' or self.action == 'retrieve':
             permission_classes = [permissions.AllowAny]
-        elif self.action == 'update' or self.action == 'destroy':
+        elif self.action == 'update' or self.action == 'partial_update' or self.action == 'destroy':
             permission_classes = [IsOwnerOrAdmin]
         else:
             permission_classes = [permissions.IsAuthenticated]
@@ -57,7 +57,17 @@ class PostViewSet(viewsets.ModelViewSet):
 
 
 class TopicViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAdminUser]
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
     lookup_field = 'pk'
+
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        if self.action == 'retrieve' or self.action == 'list':
+            permission_classes = [permissions.AllowAny]
+        else:
+            permission_classes = [permissions.IsAdminUser]
+
+        return [permission() for permission in permission_classes]
