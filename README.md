@@ -3,7 +3,7 @@ This is simple Blog API endpoint developed with Django Rest_framework and Python
 You can use this API and communicate with you front-end or connect it with some third party app. 
 With this API endpoint, you can:
 
-![Api methods](https://i.imgur.com/7Qwcfkq.png)
+![Api methods](https://i.imgur.com/nehBvoD.png)
  
 Create, retrieve, update, delete (CRUD): Posts, Users and Topics.
 Everyone can create user account. Post list and retrieve methods also can be performed from non-authenticated user.
