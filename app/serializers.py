@@ -20,7 +20,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = User
-        fields = ('url', 'posts', 'first_name', 'last_name', 'email', 'password')
+        fields = ('url', 'first_name', 'last_name', 'email', 'password', 'posts',)
 
     def __init__(self, *args, **kwargs):
         super(UserSerializer, self).__init__(*args, **kwargs)

@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
@@ -148,6 +150,29 @@ class TestPostViewSet(APITestCase):
         actual_items = [dict(item) for item in response.data]
         self.assertEqual(expected_items, actual_items)
 
+    def test_list_with_search_query(self):
+        response = self.client.get(''.join([self.list_url(), "?q=Drogon"]))
+        expected_items = [
+            {
+                'url': 'http://testserver/api/posts/{}/'.format(
+                    self.post1.pk
+                ),
+                'topic': 'http://testserver/api/topics/{}/'.format(
+                    self.topic.pk
+                ),
+                'user': 'http://testserver/api/users/{}/'.format(
+                    self.user1.pk
+                ),
+                'title': 'Drogon',
+                'content': '',
+                'status': 'draft',
+            },
+        ]
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(len(response.data), 1)
+        actual_items = [dict(item) for item in response.data]
+        self.assertEqual(expected_items, actual_items)
+
     # GET (detail) method
     def test_retrieve_existing_post(self):
         expected_data = {
@@ -255,27 +280,42 @@ class TestPostViewSet(APITestCase):
 
     # UPDATE (PUT) method
     def test_post_update_with_non_authenticated_user(self):
-        response = self.client.post(self.list_url())
+        data = {
+            "title": "Some random title",
+            "content": "Some random content",
+            "topic": "http://testserver/api/topics/1/"
+        }
+        response = self.client.put(self.detail_url(self.post.pk), data=data)
         self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
 
-    def test_post_update_with_authenticated_user(self):
+    def test_post_update_with_non_owner_authenticated_user(self):
         self.client.force_authenticate(self.user2)
         data = {
             "title": "Some random title",
             "content": "Some random content",
             "topic": "http://testserver/api/topics/1/"
         }
-        response = self.client.post(self.list_url(), data=data)
-        self.assertEqual(status.HTTP_201_CREATED, response.status_code)
+        response = self.client.put(self.detail_url(self.post1.pk), data=data)
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
 
-    def test_post_update_with_missing_data(self):
+    def test_post_update_with_partial_data_owner(self):
         self.client.force_authenticate(self.user2)
         data = {
             "title": "Some random title",
             "content": "Some random content",
         }
-        response = self.client.post(self.list_url(), data=data)
-        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        response = self.client.patch(self.detail_url(self.post2.pk), data=data)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+
+    def test_post_update_with_authenticated_owner_user(self):
+        self.client.force_authenticate(self.user2)
+        data = {
+            "title": "Some random title",
+            "content": "Some random content",
+            "topic": "http://testserver/api/topics/1/"
+        }
+        response = self.client.put(self.detail_url(self.post2.pk), data=data)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
 
 
 class TestUserViewSet(APITestCase):
@@ -305,40 +345,39 @@ class TestUserViewSet(APITestCase):
     # GET (list) method
     def test_list_without_authenticated_user(self):
         response = self.client.get(self.list_url())
-        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
-        self.assertDictEqual(
-            {'detail': 'Authentication credentials were not provided.'},
-            dict(response.data),
-        )
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
 
     def test_list_with_authenticated_user(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.list_url())
-        expected_items = [
-            {
-                'url': 'http://testserver/api/topics/1/',
-                'name': 'Dragons'
-            }
-        ]
+        expected_items = [OrderedDict([
+            ('url', 'http://testserver/api/users/1/'),
+            ('first_name', ''), ('last_name', ''),
+            ('email', 'test@test.com'),
+            ('posts', [OrderedDict([('title', 'Rhaegal'),
+            ('topic', 'http://testserver/api/topics/1/')])])
+        ])]
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(len(response.data), 1)
         actual_items = [dict(item) for item in response.data]
-        print(actual_items)
         self.assertEqual(expected_items, actual_items)
 
     # GET (retrieve) method
     def test_retrieve_with_authenticated_user(self):
         self.client.force_authenticate(self.user)
 
-        #Existing user
         response = self.client.get(self.detail_url(pk=self.user.pk))
         expected_data = {
-                'url': 'http://testserver/api/topics/1/',
-                'name': 'Dragons'
-            }
+            'url': 'http://testserver/api/users/1/',
+            'first_name': '',
+            'last_name': '',
+            'email': 'test@test.com',
+            'posts': [OrderedDict([('title', 'Rhaegal'), ('topic', 'http://testserver/api/topics/1/')])]
+
+        }
 
         self.assertEqual(status.HTTP_200_OK, response.status_code)
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(len(response.data), 5)
         actual_data = dict(response.data)
         self.assertDictEqual(expected_data, actual_data)
 
@@ -350,11 +389,7 @@ class TestUserViewSet(APITestCase):
 
     def test_retrieve_without_authenticated_user(self):
         response = self.client.get(self.detail_url(pk=self.user.pk))
-        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
-        self.assertDictEqual(
-            {'detail': 'Authentication credentials were not provided.'},
-            dict(response.data),
-        )
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
 
 
 class TestTopicViewSet(APITestCase):
@@ -384,11 +419,7 @@ class TestTopicViewSet(APITestCase):
     # GET (list) method
     def test_list_without_authenticated_user(self):
         response = self.client.get(self.list_url())
-        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
-        self.assertDictEqual(
-            {'detail': 'Authentication credentials were not provided.'},
-            dict(response.data),
-        )
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
 
     def test_list_with_authenticated_user(self):
         self.client.force_authenticate(self.user)
@@ -428,8 +459,4 @@ class TestTopicViewSet(APITestCase):
 
     def test_retrieve_without_authenticated_user(self):
         response = self.client.get(self.detail_url(pk=self.user.pk))
-        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
-        self.assertDictEqual(
-            {'detail': 'Authentication credentials were not provided.'},
-            dict(response.data),
-        )
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
