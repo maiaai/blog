@@ -27,7 +27,8 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         self.request = self.context.get('request', None)
 
     def get_posts(self, obj):
-        return UserPostSerializer(obj.get_user_posts(), many=True, context={'request': self.request}).data
+        posts = obj.posts.all()
+        return UserPostSerializer(posts, many=True, context={'request': self.request}).data
 
     def validate_email(self, email):
         user = User.objects.filter(email=email).exists()
@@ -68,13 +69,22 @@ class PostSerializer(serializers.HyperlinkedModelSerializer):
 class TopicSerializer(serializers.HyperlinkedModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name="topic-detail")
     name = serializers.CharField(max_length=128)
+    posts = serializers.SerializerMethodField()
 
     class Meta:
         model = Topic
-        fields = ('url', 'name', )
+        fields = ('url', 'name', 'posts')
+
+    def __init__(self, *args, **kwargs):
+        super(TopicSerializer, self).__init__(*args, **kwargs)
+        self.request = self.context.get('request', None)
 
     def validate_name(self, name):
         topic = Topic.objects.filter(name=name).exists()
         if topic:
             raise serializers.ValidationError("Topic with name {} already exists.".format(name))
         return name
+
+    def get_posts(self, obj):
+        posts = obj.posts.all()
+        return PostSerializer(posts, many=True, context={'request': self.request}).data

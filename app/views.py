@@ -2,7 +2,7 @@ from django.db.models import Q
 from django.shortcuts import HttpResponse
 from rest_framework import viewsets, permissions
 from .models import User, Post, Topic
-from .permissions import IsOwnerOrAdmin
+from .permissions import IsOwnerOrAdmin, IsSelfUserOrAdmin
 from .serializers import UserSerializer, PostSerializer, TopicSerializer
 
 
@@ -21,7 +21,7 @@ class UserViewSet(viewsets.ModelViewSet):
         Instantiates and returns the list of permissions that this view requires.
         """
         if self.action == 'update' or self.action == 'partial_update' or self.action == 'destroy':
-            permission_classes = [IsOwnerOrAdmin]
+            permission_classes = [IsSelfUserOrAdmin]
         else:
             permission_classes = [permissions.AllowAny]
 

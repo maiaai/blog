@@ -20,9 +20,6 @@ class User(AbstractUser):
     def __str__(self):
         return self.first_name + '' + self.last_name
 
-    def get_user_posts(self):
-        return Post.objects.filter(user=self)
-
 
 class Topic(models.Model):
     name = models.CharField(max_length=128)
@@ -35,8 +32,8 @@ class Topic(models.Model):
 
 
 class Post(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user')
-    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='topic')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='posts')
     title = models.CharField(max_length=252)
     content = models.TextField()
     created = models.DateTimeField(auto_now_add=True)
