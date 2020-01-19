@@ -1,6 +1,10 @@
 from django.db.models import Q
 from django.shortcuts import HttpResponse
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, serializers
+from rest_framework.decorators import action
+from rest_framework.generics import get_object_or_404
+from rest_framework.response import Response
+
 from .models import User, Post, Topic
 from .permissions import IsOwnerOrAdmin, IsSelfUserOrAdmin
 from .serializers import UserSerializer, PostSerializer, TopicSerializer
@@ -54,6 +58,22 @@ class PostViewSet(viewsets.ModelViewSet):
                 Q(title__icontains=qs) |
                 Q(content__icontains=qs)).distinct()
         return queryset
+
+    # This is direct publish url. Without this method, status can be updated via PUT/PATCH
+    @action(methods=['post'], detail=True, permission_classes=[permissions.IsAuthenticated], url_path='publish',
+            url_name='publish')
+    def post_publish(self, request, pk=None):
+        post = get_object_or_404(Post, pk=pk)
+        user = request.user
+
+        if post.user != user:
+            raise serializers.ValidationError('You can not publish posts that are not yours')
+        if post.status == 'publish':
+            raise serializers.ValidationError('This post is already published')
+
+        post.status = 'publish'
+        post.save()
+        return Response(data=["Post published"], status=200)
 
 
 class TopicViewSet(viewsets.ModelViewSet):

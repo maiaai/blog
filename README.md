@@ -5,10 +5,8 @@ With this API endpoint, you can:
 
 ![Api methods](https://i.imgur.com/nehBvoD.png)
  
-Create, retrieve, update, delete (CRUD): Posts, Users and Topics.
-Everyone can create user account. Post list and retrieve methods also can be performed from non-authenticated user.
-In order to "Update/Delete user account, Update/Delete Post, you need to be Owner. 
-Create/Update/Delete Topic" can be performed only by staff user and Post Create can be performed by authenticated user.
+Additional direct publish url is added to the PostViewSet. 
+Without this additional, status can be updated via PUT/PATCH request on a Post object.
 
 As part of the API, django admin site is included.
 
