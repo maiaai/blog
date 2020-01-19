@@ -424,12 +424,17 @@ class TestTopicViewSet(APITestCase):
     def test_list_with_authenticated_user(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.list_url())
-        expected_items = [
-            {
-                'url': 'http://testserver/api/topics/1/',
-                'name': 'Dragons'
-            }
-        ]
+        expected_items = [OrderedDict([
+            ('url', 'http://testserver/api/topics/1/'),
+            ('name', 'Dragons'),
+            ('posts', [OrderedDict([
+                ('url', 'http://testserver/api/posts/1/'),
+                ('topic', 'http://testserver/api/topics/1/'),
+                ('user', 'http://testserver/api/users/1/'),
+                ('title', 'Rhaegal'),
+                ('content', ''),
+                ('status', 'draft')])])])]
+
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(len(response.data), 1)
         actual_items = [dict(item) for item in response.data]
@@ -443,11 +448,18 @@ class TestTopicViewSet(APITestCase):
         response = self.client.get(self.detail_url(pk=self.user.pk))
         expected_data = {
                 'url': 'http://testserver/api/topics/1/',
-                'name': 'Dragons'
+                'name': 'Dragons',
+                'posts': [OrderedDict(
+                    [('url', 'http://testserver/api/posts/1/'),
+                     ('topic', 'http://testserver/api/topics/1/'),
+                     ('user', 'http://testserver/api/users/1/'),
+                     ('title', 'Rhaegal'),
+                     ('content', ''),
+                     ('status', 'draft')])]
             }
 
         self.assertEqual(status.HTTP_200_OK, response.status_code)
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(len(response.data), 3)
         actual_data = dict(response.data)
         self.assertDictEqual(expected_data, actual_data)
 
