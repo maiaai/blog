@@ -3,27 +3,7 @@ This is simple Blog API endpoint developed with Django Rest_framework and Python
 You can use this API and communicate with you front-end or connect it with some third party app. 
 With this API endpoint, you can:
 
-METHOD:             OBJECT:             PERMISSION:
-
-`GET`               `POST`              Anyone
-                    `USER`              Anyone
-                    `TOPIC`             Anyone
-                    
-`RETRIEVE`          `POST`              Anyone
-                    `USER`              Anyone
-                    `TOPIC`             Anyone
-                    
-`CREATE`            `POST`              IsAuthenticated
-                    `USER`              Anyone
-                    `TOPIC`             IsAdmin
-
-`UPDATE`            `POST`              IsOwnerOrAdmin
-                    `USER`              IsOwnerOrAdmin
-                    `TOPIC`             IsAdmin
-                          
-`DELETE`            `POST`              IsOwnerOrAdmin
-                    `USER`              IsOwnerOrAdmin
-                    `TOPIC`             IsAdmin
+![Api methods](https://i.imgur.com/7Qwcfkq.png)
  
 Create, retrieve, update, delete (CRUD): Posts, Users and Topics.
 Everyone can create user account. Post list and retrieve methods also can be performed from non-authenticated user.
@@ -43,5 +23,7 @@ For production it is recommended using Postgres
 5. Create SuperUser: `python manage.py createsuperuser`
 6. The root url is : "http://localhost:{port}/api/"
 7. Use Postman or CURL to make requests.
+
+NOTE: Most of the test scenarios are covered with Unit tests.
 
 Thank you for considering me as a future coleague of yours. 
